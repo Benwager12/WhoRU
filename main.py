@@ -56,7 +56,8 @@ async def who(ctx):
 			await ctx.reply("More than 1 face in image.")
 			continue
 		else:
-			await ctx.reply("The picture you sent (apparently) looks like " + name)
+			file = discord.File("faces/"+name+".jpg")
+			await ctx.reply("The picture you sent (apparently) looks like " + name, file=file)
 
 	# Deleting attachments.
 	for attachment in ctx.message.attachments:
