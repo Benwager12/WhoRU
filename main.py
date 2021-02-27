@@ -1,8 +1,10 @@
 ###########################################
 # WhoRU Discord Bot
-# Recognise which celebrity you look like!
+# See which celebrity you look like!
 ###########################################
-import recognise_face
+
+from recognise_face import lookup
+from os import remove
 
 ###########################################
 # Loading variables
@@ -19,27 +21,48 @@ PREFIX = os.getenv("PREFIX")
 ###########################################
 import discord
 from discord.ext import commands
-client = commands.Bot(command_prefix=PREFIX)
 
-@client.event
+bot = commands.Bot(command_prefix = PREFIX)
+
+@bot.event
 async def on_ready():
 	print("Bot is online")
 
 ###########################################
-# On Message
+# Comamnds
 ###########################################
-@client.event
-async def on_message(message):
-	print(f"{message.author.display_name}: {message.content}")
 
-###########################################
-# On Message
-###########################################
-@client.command()
+image_types = ["png", "jpeg", "jpg"]
+
+@bot.command()
 async def who(ctx):
+	if len(ctx.message.attachments) == 0:
+		return await ctx.reply("No attachments given.")
 
+	# Iterating through attachments and saving them, deleting later.
+	for attachment in ctx.message.attachments:
+		if not attachment.filename.lower().split(".")[-1] in image_types:
+			continue
+		await attachment.save("temporary-images/" + attachment.filename)
+
+	# Iterating through attachments and saying who it looks like
+	for attachment in ctx.message.attachments:
+		name = lookup("temporary-images/" + attachment.filename)
+
+		if name == None:
+			return await ctx.reply("No faces in image.")
+			continue
+		elif name == ">1":
+			await ctx.reply("More than 1 face in image.")
+			continue
+		else:
+			await ctx.reply("The picture you sent (apparently) looks like " + name)
+
+	# Deleting attachments.
+	for attachment in ctx.message.attachments:
+		remove("temporary-images/" + attachment.filename)
 
 ###########################################
 # Inserting token
 ###########################################
-client.run(DISCORD_TOKEN)
+bot.run(DISCORD_TOKEN)
