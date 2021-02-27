@@ -1,0 +1,5 @@
+.env
+face_data.csv
+recognise_face.py
+faces/
+temporary-images/
